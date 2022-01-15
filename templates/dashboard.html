@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    </head>
+<body>
+    <a href="/blog/index" target="_blank">
+        <button class="button button2">Login</button>
+    </a>
+    <a href="/blog/create_post" target="_self">
+        <button class="button button3">Create Post</button>
+    </a>
+<h2>Blog Post</h2>
+
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Content</th>
+        <th>Author</th>
+        <th>Action</th>
+    </tr>
+    {% for datas in data %}
+    <tr>
+        <td>{{ datas.posttitle }}</td>
+        <td>{{ datas.postcontent }}</td>
+        <td>{{ datas.author }}</td>
+        <td>
+            <a href="/blog/edit_post?id={{ datas.id }}" target="_self">
+                <button class="button button4">Edit</button>
+            </a>
+            <a href="/blog/delete_post?id={{ datas.id }}" target="_self">
+                <button class="button button5">Delete</button>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
