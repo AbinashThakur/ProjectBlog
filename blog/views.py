@@ -4,12 +4,38 @@ import json, datetime
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from blog.models import * 
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def index(request):
-    return render(request, 'login.html')
+    if request.method == 'POST':
+        
+        username = request.POST['uname']
+        password = request.POST['psw']
+        
+        user = authenticate(username=username, password=password)
+        if user:
+            if user.is_active:
+                auth_login(request, user)
+                request.session['username'] = username
+            
+            return redirect('/blog/')
+        else:
+            print("No permission")
+            return Response({'Error_Msg':'User not authorized'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        
+    else:
+        return render(request, 'login.html')
+
+def logout(request):
+    auth_logout(request)
+    try:
+        del request.session['username']
+    except KeyError:
+        pass
+    return redirect('/blog/')
 
 @api_view(['GET','POST'])
 def create_post(request):
@@ -24,7 +50,7 @@ def create_post(request):
         new_Blogpost = Blogpost(
                 posttitle=title,
                 postcontent=content,
-                author="Abinash",
+                author=request.session.get('username'),
                 publishedon = datetime.datetime.now(),
                 deleted=0
             )
@@ -52,30 +78,22 @@ def edit_post(request):
         edit_post = Blogpost.objects.get(id=postid)
         edit_post.posttitle = title
         edit_post.postcontent = content
-        edit_post.author = "Abinash"
+        edit_post.author = request.session.get('username')
         edit_post.updatedon = datetime.datetime.now()
         edit_post.save()
         
         return redirect('/blog/')
 
-@api_view(['POST'])
-def login(request):
-    if request.method == 'POST':
+@api_view(['GET','POST'])
+def view_post(request):
+    if request.method == 'GET':
         
-        username = request.POST['uname']
-        password = request.POST['psw']
+        postid = request.GET['id']
+        
+        get_post = list(Blogpost.objects.filter(id=postid, deleted=0).values())
+        
+        return render(request, 'post_view.html', {"data": get_post})
 
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            # A backend authenticated the credentials
-            print("No permission")
-        else:
-            print("permission")
-            # No backend authenticated the credentials
-        
-        return Response({"Success_Msg", "Successfull"}, status=status.HTTP_200_OK)
-    else:
-        return Response({'Error_Msg':'This is a POST method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 @api_view(['GET'])
 def dashboard(request):

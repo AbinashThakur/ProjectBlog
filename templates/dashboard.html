@@ -5,34 +5,50 @@
         <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     </head>
 <body>
-    <a href="/blog/index" target="_blank">
-        <button class="button button2">Login</button>
-    </a>
+    {% if user.is_authenticated %}
     <a href="/blog/create_post" target="_self">
         <button class="button button3">Create Post</button>
     </a>
-<h2>Blog Post</h2>
+    <a href="/blog/logout" target="_self">
+        <button class="button button2">Logout</button>
+    </a>
+    {% else %}
+    <a href="/blog/index" target="_self">
+        <button class="button button2">Login</button>
+    </a>
+    {% endif %}
+<h2>Dashboard/Blog Post</h2>
 
 <table>
     <tr>
         <th>Title</th>
         <th>Content</th>
         <th>Author</th>
-        <th>Action</th>
+        <th>Perma Link</th>
+        <th>Published Date</th>
+        <th>Published</th>
+        {% if user.is_authenticated %}
+            <th>Action</th>
+        {% endif %}
     </tr>
     {% for datas in data %}
     <tr>
         <td>{{ datas.posttitle }}</td>
         <td>{{ datas.postcontent }}</td>
         <td>{{ datas.author }}</td>
+        <td><a href="/blog/view_post?id={{ datas.id }}" target="_blank">View</a></td>
+        <td>{{ datas.publishedon }}</td>
+        <td>Active</td>
+        {% if user.is_authenticated %}
         <td>
             <a href="/blog/edit_post?id={{ datas.id }}" target="_self">
                 <button class="button button4">Edit</button>
             </a>
             <a href="/blog/delete_post?id={{ datas.id }}" target="_self">
-                <button class="button button5">Delete</button>
+                <button class="button button5">Unpublish</button>
             </a>
         </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </table>
